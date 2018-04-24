@@ -23,8 +23,11 @@ type UdpHandler struct {
 	Gossiper       messenger.Gossiper
 }
 
+//лучше отвзять хендлеры от конкретной реализации транспорта (UDPAddr)
 func (u UdpHandler) Handler(src *net.UDPAddr, n int, buf []byte) {
 	header, body := buf[:c.PrefLen], buf[c.PrefLen:n]
+	//Я бы заменил на мапу хендлеров или типо того что бы идти в цикле пока не найдешь подходящий
+	// во всех хендлерах body более приортетный параметр и должен идти первым
 	switch {
 	case bytes.Equal(header, c.PrefMessage):
 		u.messageHandler(src, body)
@@ -110,19 +113,22 @@ func (u UdpHandler) monitoringHandler(src *net.UDPAddr, body []byte) {
 
 func (u UdpHandler) helloHandler(src *net.UDPAddr, body []byte) {
 	peer := models.Peer{IP: src.IP, Port: binary.LittleEndian.Uint16(body)}
+	//создается здесь а используется на 10 строк ниже
 	address := peer.ToString()
 	u.PeerStorage.Add(peer)
-
 	wb, err := msgpack.Marshal(models.WelcomePack{PeerList: u.PeerStorage.List(), Msg: u.MessageStorage.Get()})
 	if err != nil {
 		log.Println("hello marshal error ", err)
 		return
 	}
+	//Мне кажется красивее было бы отправлять сразу в SendPayloadToUDP несколько буферов
+	// transport.SendPayloadToUDP(address, payload, wb)
 	payload := append(c.PrefWelcome, wb...)
 	transport.SendPayloadToUDP(address, payload)
 }
 
 func (u UdpHandler) shutdownHandler(src *net.UDPAddr, body []byte) {
+	//graceful shutdown точно не нужен?
 	log.Println("got shutdown signal")
 	os.Exit(2)
 }

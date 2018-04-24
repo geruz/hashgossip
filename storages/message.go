@@ -13,6 +13,9 @@ type messageStorage struct {
 
 type MessageStorage interface {
 	Set(models.Message) bool
+
+	// u.MessageStorage.Get() метод get смотрится дико
+	// если я парвильно понял может быть current, last или типо того?
 	Get() models.Message
 }
 

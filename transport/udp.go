@@ -9,6 +9,10 @@ import (
 
 const MaxDatagramSize = 8192
 
+
+//Я бы сделал интерфейс транспорта который поставляет боди + инфу о источнике и жедт в ответ массив байт ответа
+// это бы позволило делать разные транспорты при необходимости
+
 func SendPayloadToUDP(address string, payload []byte) error {
 	if len(payload) > MaxDatagramSize {
 		return errors.New(fmt.Sprintf("maxPayloadSize = %v, payload size = %v", MaxDatagramSize, len(payload)))

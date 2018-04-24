@@ -1,5 +1,7 @@
 package consts
 
+
+// разобрать файл
 var (
 	PrefHello      = []byte("HELLO")
 	PrefMonitoring = []byte("MONIT")

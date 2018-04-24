@@ -18,6 +18,7 @@ type PeerStorage interface {
 
 type peerStorage struct {
 	list  []models.Peer
+	//RW mutex?
 	mutex *sync.Mutex
 }
 
@@ -26,6 +27,9 @@ func NewPeerStorage() PeerStorage {
 }
 
 func (p *peerStorage) List() []models.Peer {
+	//lock? может быть ситуация когда gossiper получает список и в это время список меняется
+	// не стоит ли возвращать копию?
+	// Падения скорее всего не будет но build --race  может детектить
 	return p.list
 }
 
@@ -42,6 +46,7 @@ func (p *peerStorage) unsafeAdd(peer models.Peer) {
 	}
 }
 
+// lock? публичный но не безопасный (сделать приватным?)
 func (p *peerStorage) IsIn(peer models.Peer) bool {
 	for _, v := range p.list {
 		if v.Port == peer.Port && bytes.Equal(v.IP, peer.IP) {
